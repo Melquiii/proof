@@ -9,3 +9,5 @@ build/
 *.log
 .DS_Store
 .turbo/
+app/.env
+app/.env.local
