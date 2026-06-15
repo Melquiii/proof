@@ -1,21 +1,26 @@
 import { useEffect, useState } from 'react'
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native'
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { useRouter } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { getRatingBand, isProvisional, computeReliabilityScore } from '@proof/algorithms'
+import { useRatingHistory } from '../../hooks/useRatingHistory'
+import { RatingChart } from '../../components/RatingChart'
 import type { Profile, SportRating, Match } from '../../types'
 
 export default function ProfileScreen() {
   const router = useRouter()
+  const [userId, setUserId] = useState<string | undefined>()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [rating, setRating] = useState<SportRating | null>(null)
   const [recentMatches, setRecentMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
+  const { history } = useRatingHistory(userId ?? '', 'tennis', 30)
 
   useEffect(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
+      setUserId(user.id)
 
       const [{ data: p }, { data: r }, { data: m }] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', user.id).single(),
@@ -95,7 +100,14 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          <View className="flex-row gap-4 pt-3 border-t border-proof-border">
+          {history.length >= 2 && (
+            <View className="mt-3 pt-3 border-t border-proof-border">
+              <Text className="text-proof-muted text-xs mb-2">Rating progression</Text>
+              <RatingChart history={history} height={60} />
+            </View>
+          )}
+
+          <View className="flex-row gap-4 pt-3 border-t border-proof-border mt-3">
             <View>
               <Text className="text-proof-muted text-xs">Matches</Text>
               <Text className="text-proof-white font-semibold">{rating.match_count}</Text>
