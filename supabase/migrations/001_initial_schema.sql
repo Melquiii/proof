@@ -50,8 +50,9 @@ alter table public.sport_ratings enable row level security;
 create policy "Ratings viewable by everyone"
   on public.sport_ratings for select using (true);
 
-create policy "System updates ratings"
-  on public.sport_ratings for all using (auth.uid() = user_id);
+-- No INSERT/UPDATE/DELETE for authenticated users.
+-- Only the service-role Edge Function (update-ratings) writes to this table.
+-- The new-user trigger runs as SECURITY DEFINER and bypasses RLS to seed the initial row.
 
 -- ─────────────────────────────────────────
 -- MATCHES
@@ -89,9 +90,21 @@ create policy "p1 can insert match"
   on public.matches for insert
   with check (auth.uid() = p1_id);
 
-create policy "Participants can update match"
+-- p2 (opponent) can confirm or reject a pending match only.
+-- with check ensures status can only move to confirmed/rejected, and winner_id cannot be changed.
+create policy "p2 can confirm or reject"
   on public.matches for update
-  using (auth.uid() = p1_id or auth.uid() = p2_id);
+  using (auth.uid() = p2_id and status = 'pending')
+  with check (
+    status in ('confirmed', 'rejected')
+    and winner_id = (select winner_id from public.matches where id = matches.id)
+  );
+
+-- p1 (creator) can only cancel their own pending match.
+create policy "p1 can cancel pending"
+  on public.matches for update
+  using (auth.uid() = p1_id and status = 'pending')
+  with check (status = 'cancelled');
 
 -- ─────────────────────────────────────────
 -- MATCH SETS
