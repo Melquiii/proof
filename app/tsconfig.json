@@ -1,6 +1,10 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
+    "strict": true,
+    "paths": {
+      "@proof/algorithms": ["../packages/algorithms/src/index.ts"],
+      "@proof/algorithms/*": ["../packages/algorithms/src/*"]
+    }
   }
 }

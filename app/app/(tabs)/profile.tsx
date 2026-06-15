@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native'
 import { useRouter } from 'expo-router'
 import { supabase } from '../../lib/supabase'
-import { getRatingBand, isProvisional, computeReliabilityScore } from '../../../packages/algorithms/src/tennis'
+import { getRatingBand, isProvisional, computeReliabilityScore } from '@proof/algorithms'
 import type { Profile, SportRating, Match } from '../../types'
 
 export default function ProfileScreen() {

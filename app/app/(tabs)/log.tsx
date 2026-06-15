@@ -99,6 +99,9 @@ export default function LogMatchScreen() {
       parsedSets.map(s => ({ ...s, match_id: match.id }))
     )
 
+    // Notify opponent via push notification
+    await supabase.functions.invoke('notify-match-request', { body: { matchId: match.id } })
+
     setSubmitting(false)
     Alert.alert(
       'Match Logged',

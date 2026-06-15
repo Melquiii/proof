@@ -11,6 +11,7 @@ create table public.profiles (
   avatar_url  text,
   country     text,
   city        text,
+  push_token  text,  -- Expo push token for match request notifications
   created_at  timestamptz default now(),
   updated_at  timestamptz default now()
 );

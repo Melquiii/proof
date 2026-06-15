@@ -1,8 +1,10 @@
+import '../global.css'
 import { useEffect } from 'react'
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { useRouter, useSegments } from 'expo-router'
 import { supabase } from '../lib/supabase'
+import { registerForPushNotifications, setupNotificationListeners } from '../lib/notifications'
 
 export default function RootLayout() {
   const router = useRouter()
@@ -16,10 +18,17 @@ export default function RootLayout() {
         router.replace('/(auth)/login')
       } else if (session && inAuthGroup) {
         router.replace('/(tabs)')
+        registerForPushNotifications()
       }
     })
 
     return () => subscription.unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    return setupNotificationListeners((matchId) => {
+      router.push(`/match/confirm/${matchId}`)
+    })
   }, [])
 
   return (
