@@ -11,7 +11,6 @@ create table public.profiles (
   avatar_url  text,
   country     text,
   city        text,
-  push_token  text,  -- Expo push token for match request notifications
   created_at  timestamptz default now(),
   updated_at  timestamptz default now()
 );
@@ -26,6 +25,23 @@ create policy "Users can update own profile"
 
 create policy "Users can insert own profile"
   on public.profiles for insert with check (auth.uid() = id);
+
+-- ─────────────────────────────────────────
+-- PUSH TOKENS (separate from profiles — never publicly readable)
+-- ─────────────────────────────────────────
+create table public.push_tokens (
+  user_id    uuid primary key references public.profiles(id) on delete cascade,
+  token      text not null,
+  updated_at timestamptz default now()
+);
+
+alter table public.push_tokens enable row level security;
+
+-- Owner can read/write their own token. Edge Functions use service role and bypass RLS.
+create policy "Owner manages own push token"
+  on public.push_tokens for all
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
 
 -- ─────────────────────────────────────────
 -- SPORT RATINGS

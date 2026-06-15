@@ -39,27 +39,31 @@ export async function registerForPushNotifications(): Promise<string | null> {
 
   const token = (await Notifications.getExpoPushTokenAsync()).data
 
-  // Store token in Supabase so Edge Functions can reach this device
+  // Store in push_tokens table — separate from profiles, not publicly readable
   const { data: { user } } = await supabase.auth.getUser()
   if (user) {
     await supabase
-      .from('profiles')
-      .update({ push_token: token } as any)
-      .eq('id', user.id)
+      .from('push_tokens')
+      .upsert({ user_id: user.id, token, updated_at: new Date().toISOString() })
   }
 
   return token
 }
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 // Called from root _layout to wire up notification tap handling
 export function setupNotificationListeners(
   onMatchConfirmation: (matchId: string) => void
 ) {
-  // Foreground notification tap
   const sub = Notifications.addNotificationResponseReceivedListener(response => {
     const data = response.notification.request.content.data as any
-    if (data?.type === 'match_request' && data?.matchId) {
-      onMatchConfirmation(data.matchId)
+    if (
+      data?.type === 'match_request' &&
+      typeof data?.matchId === 'string' &&
+      UUID_RE.test(data.matchId)  // validate before using in navigation
+    ) {
+      onMatchConfirmation(encodeURIComponent(data.matchId))
     }
   })
 
