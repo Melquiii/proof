@@ -39,6 +39,16 @@ Deno.serve(async (req) => {
 
     if (!r1 || !r2) return new Response('Player ratings not found', { status: 404 })
 
+    // Idempotency: skip if already processed
+    const { data: existing } = await supabase
+      .from('rating_history')
+      .select('id')
+      .eq('match_id', matchId)
+      .limit(1)
+    if (existing && existing.length > 0) {
+      return new Response(JSON.stringify({ ok: true, skipped: true }), { headers: { 'Content-Type': 'application/json' } })
+    }
+
     const toPlayerRating = (r: any): PlayerRating => ({
       rating: r.rating,
       ratingDeviation: r.rating_deviation,
