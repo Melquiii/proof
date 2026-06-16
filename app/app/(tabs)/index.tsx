@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useState, useCallback } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native'
 import { useRouter } from 'expo-router'
+import { useFocusEffect } from 'expo-router'
 import { supabase } from '../../lib/supabase'
-import type { Match, Profile } from '../../types'
+import type { Match } from '../../types'
 
 export default function HomeScreen() {
   const router = useRouter()
@@ -38,7 +39,7 @@ export default function HomeScreen() {
     setRefreshing(false)
   }
 
-  useEffect(() => { load() }, [])
+  useFocusEffect(useCallback(() => { load() }, []))
 
   if (loading) return (
     <View className="flex-1 bg-proof-black items-center justify-center">

@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useState, useCallback } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { getRatingBand, isProvisional, computeReliabilityScore } from '@proof/algorithms'
 import { useRatingHistory } from '../../hooks/useRatingHistory'
@@ -18,7 +18,7 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(true)
   const { history } = useRatingHistory(userId ?? '', 'tennis', 30)
 
-  useEffect(() => {
+  useFocusEffect(useCallback(() => {
     async function load() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
@@ -42,7 +42,7 @@ export default function ProfileScreen() {
       setLoading(false)
     }
     load()
-  }, [])
+  }, []))
 
   if (loading) return (
     <View className="flex-1 bg-proof-black items-center justify-center">
