@@ -61,15 +61,23 @@ export default function ProfileScreen() {
             <Text className="text-proof-white text-2xl font-bold">{profile?.display_name}</Text>
             <Text className="text-proof-muted">@{profile?.username}</Text>
           </View>
-          <TouchableOpacity
-            className="border border-proof-border rounded-xl px-3 py-2"
-            onPress={async () => {
-              await supabase.auth.signOut()
-              router.replace('/(auth)/login')
-            }}
-          >
-            <Text className="text-proof-muted text-sm">Sign Out</Text>
-          </TouchableOpacity>
+          <View className="flex-row gap-2">
+            <TouchableOpacity
+              className="border border-proof-border rounded-xl px-3 py-2"
+              onPress={() => router.push('/edit-profile')}
+            >
+              <Text className="text-proof-muted text-sm">Edit</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              className="border border-proof-border rounded-xl px-3 py-2"
+              onPress={async () => {
+                await supabase.auth.signOut()
+                router.replace('/(auth)/login')
+              }}
+            >
+              <Text className="text-proof-muted text-sm">Sign Out</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         {profile?.city && (

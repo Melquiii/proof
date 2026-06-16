@@ -30,7 +30,6 @@ export default function PeopleScreen() {
         .from('friendships')
         .select('addressee_id')
         .eq('requester_id', user.id)
-        .eq('status', 'accepted')
         .then(({ data }) => {
           setFollowedIds(new Set((data ?? []).map(r => r.addressee_id)))
         })
@@ -73,22 +72,22 @@ export default function PeopleScreen() {
 
   async function follow(targetId: string) {
     if (!myId) return
-    await supabase.from('friendships').upsert({
+    // status defaults to 'pending' via DB default; INSERT policy enforces this
+    const { error } = await supabase.from('friendships').insert({
       requester_id: myId,
       addressee_id: targetId,
-      status: 'accepted',
     })
-    setFollowedIds(prev => new Set([...prev, targetId]))
+    if (!error) setFollowedIds(prev => new Set([...prev, targetId]))
   }
 
   async function unfollow(targetId: string) {
     if (!myId) return
-    await supabase
+    const { error } = await supabase
       .from('friendships')
       .delete()
       .eq('requester_id', myId)
       .eq('addressee_id', targetId)
-    setFollowedIds(prev => {
+    if (!error) setFollowedIds(prev => {
       const next = new Set(prev)
       next.delete(targetId)
       return next

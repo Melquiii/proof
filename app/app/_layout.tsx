@@ -57,6 +57,10 @@ export default function RootLayout() {
           name="player/[username]"
           options={{ title: 'Player', presentation: 'card' }}
         />
+        <Stack.Screen
+          name="edit-profile"
+          options={{ title: 'Edit Profile', presentation: 'modal' }}
+        />
       </Stack>
     </>
   )
