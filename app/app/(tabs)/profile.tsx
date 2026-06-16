@@ -6,7 +6,7 @@ import { getRatingBand, isProvisional, computeReliabilityScore } from '@proof/al
 import { useRatingHistory } from '../../hooks/useRatingHistory'
 import { RatingChart } from '../../components/RatingChart'
 import { Avatar } from '../../components/Avatar'
-import type { Profile, SportRating, Match } from '../../types'
+import type { Profile, SportRating } from '../../types'
 import { toPlayerRating } from '../../types'
 
 export default function ProfileScreen() {
@@ -14,7 +14,7 @@ export default function ProfileScreen() {
   const [userId, setUserId] = useState<string | undefined>()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [rating, setRating] = useState<SportRating | null>(null)
-  const [recentMatches, setRecentMatches] = useState<Match[]>([])
+  const [recentMatches, setRecentMatches] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const { history } = useRatingHistory(userId ?? '', 'tennis', 30)
 
@@ -54,6 +54,8 @@ export default function ProfileScreen() {
   const pr = rating ? toPlayerRating(rating) : null
   const provisional = pr ? isProvisional(pr) : false
   const reliability = pr ? computeReliabilityScore(pr) : 0
+  const wins = recentMatches.filter(m => m.winner_id === userId).length
+  const losses = recentMatches.filter(m => m.winner_id !== userId).length
 
   return (
     <ScrollView className="flex-1 bg-proof-black" contentContainerStyle={{ paddingBottom: 40 }}>
@@ -127,6 +129,14 @@ export default function ProfileScreen() {
               <Text className="text-proof-white font-semibold">{rating.match_count}</Text>
             </View>
             <View>
+              <Text className="text-proof-muted text-xs">W / L</Text>
+              <Text className="text-proof-white font-semibold">
+                <Text className="text-proof-green">{wins}</Text>
+                {' / '}
+                <Text className="text-red-400">{losses}</Text>
+              </Text>
+            </View>
+            <View>
               <Text className="text-proof-muted text-xs">Uncertainty</Text>
               <Text className="text-proof-white font-semibold">±{Math.round(rating.rating_deviation)}</Text>
             </View>
@@ -147,18 +157,28 @@ export default function ProfileScreen() {
         <Text className="text-proof-white font-bold text-lg mb-3">Recent Matches</Text>
         {recentMatches.length === 0
           ? <Text className="text-proof-muted">No confirmed matches yet.</Text>
-          : recentMatches.map(match => (
-            <TouchableOpacity
-              key={match.id}
-              className="bg-proof-card border border-proof-border rounded-xl p-4 mb-3"
-              onPress={() => router.push(`/match/${match.id}`)}
-            >
-              <Text className="text-proof-white font-semibold">
-                {(match.p1 as any)?.display_name} vs {(match.p2 as any)?.display_name}
-              </Text>
-              <Text className="text-proof-muted text-sm capitalize mt-0.5">{match.surface ?? 'Unknown surface'}</Text>
-            </TouchableOpacity>
-          ))
+          : recentMatches.map(match => {
+            const won = match.winner_id === userId
+            const isP1 = match.p1_id === userId
+            const opponent = isP1 ? match.p2 : match.p1
+            return (
+              <TouchableOpacity
+                key={match.id}
+                className="bg-proof-card border border-proof-border rounded-xl p-4 mb-3 flex-row items-center"
+                onPress={() => router.push(`/match/${match.id}`)}
+              >
+                <View className={`w-8 h-8 rounded-lg items-center justify-center mr-3 ${won ? 'bg-proof-green/20' : 'bg-red-500/20'}`}>
+                  <Text className={`text-xs font-bold ${won ? 'text-proof-green' : 'text-red-400'}`}>
+                    {won ? 'W' : 'L'}
+                  </Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="text-proof-white font-semibold">vs {(opponent as any)?.display_name}</Text>
+                  <Text className="text-proof-muted text-sm capitalize mt-0.5">{match.surface ?? 'Unknown surface'}</Text>
+                </View>
+              </TouchableOpacity>
+            )
+          })
         }
       </View>
     </ScrollView>

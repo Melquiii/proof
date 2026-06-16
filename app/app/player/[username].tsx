@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase'
 import { getRatingBand, isProvisional, computeReliabilityScore, winProbability } from '@proof/algorithms'
 import type { Profile, SportRating, Match } from '../../types'
 import { toPlayerRating } from '../../types'
+import { Avatar } from '../../components/Avatar'
 
 export default function PlayerProfileScreen() {
   const { username } = useLocalSearchParams<{ username: string }>()
@@ -101,7 +102,9 @@ export default function PlayerProfileScreen() {
       {/* Header */}
       <View className="px-4 pt-6 pb-4 border-b border-proof-border">
         <View className="flex-row items-start justify-between">
-          <View className="flex-1">
+          <View className="flex-row items-center gap-3 flex-1">
+            <Avatar name={profile.display_name} size={52} />
+            <View className="flex-1">
             <Text className="text-proof-white text-2xl font-bold">{profile.display_name}</Text>
             <Text className="text-proof-muted">@{profile.username}</Text>
             {profile.city && (
@@ -109,6 +112,7 @@ export default function PlayerProfileScreen() {
                 📍 {profile.city}{profile.country ? `, ${profile.country}` : ''}
               </Text>
             )}
+            </View>
           </View>
 
           {!isOwnProfile && (
