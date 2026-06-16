@@ -39,7 +39,6 @@ export default function ConfirmMatchScreen() {
       return
     }
 
-    // If confirmed, trigger rating update via Edge Function (to be built)
     if (action === 'confirm') {
       await supabase.functions.invoke('update-ratings', { body: { matchId: id } })
     }

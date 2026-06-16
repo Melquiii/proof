@@ -15,6 +15,7 @@ export default function ProfileScreen() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [rating, setRating] = useState<SportRating | null>(null)
   const [recentMatches, setRecentMatches] = useState<any[]>([])
+  const [wins, setWins] = useState(0)
   const [loading, setLoading] = useState(true)
   const { history } = useRatingHistory(userId ?? '', 'tennis', 30)
 
@@ -24,7 +25,7 @@ export default function ProfileScreen() {
       if (!user) return
       setUserId(user.id)
 
-      const [{ data: p }, { data: r }, { data: m }] = await Promise.all([
+      const [{ data: p }, { data: r }, { data: m }, { count: w }] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', user.id).single(),
         supabase.from('sport_ratings').select('*').eq('user_id', user.id).eq('sport', 'tennis').single(),
         supabase
@@ -34,11 +35,17 @@ export default function ProfileScreen() {
           .eq('status', 'confirmed')
           .order('played_at', { ascending: false })
           .limit(5),
+        supabase
+          .from('matches')
+          .select('*', { count: 'exact', head: true })
+          .eq('winner_id', user.id)
+          .eq('status', 'confirmed'),
       ])
 
       setProfile(p)
       setRating(r)
       setRecentMatches((m as any) || [])
+      setWins(w ?? 0)
       setLoading(false)
     }
     load()
@@ -54,8 +61,7 @@ export default function ProfileScreen() {
   const pr = rating ? toPlayerRating(rating) : null
   const provisional = pr ? isProvisional(pr) : false
   const reliability = pr ? computeReliabilityScore(pr) : 0
-  const wins = recentMatches.filter(m => m.winner_id === userId).length
-  const losses = recentMatches.filter(m => m.winner_id !== userId).length
+  const losses = rating ? rating.match_count - wins : 0
 
   return (
     <ScrollView className="flex-1 bg-proof-black" contentContainerStyle={{ paddingBottom: 40 }}>
