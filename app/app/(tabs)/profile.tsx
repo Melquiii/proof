@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase'
 import { getRatingBand, isProvisional, computeReliabilityScore } from '@proof/algorithms'
 import { useRatingHistory } from '../../hooks/useRatingHistory'
 import { RatingChart } from '../../components/RatingChart'
+import { Avatar } from '../../components/Avatar'
 import type { Profile, SportRating, Match } from '../../types'
 import { toPlayerRating } from '../../types'
 
@@ -59,9 +60,12 @@ export default function ProfileScreen() {
       {/* Header */}
       <View className="px-4 pt-6 pb-4 border-b border-proof-border">
         <View className="flex-row items-center justify-between mb-4">
-          <View>
-            <Text className="text-proof-white text-2xl font-bold">{profile?.display_name}</Text>
-            <Text className="text-proof-muted">@{profile?.username}</Text>
+          <View className="flex-row items-center gap-3">
+            {profile && <Avatar name={profile.display_name} size={52} />}
+            <View>
+              <Text className="text-proof-white text-2xl font-bold">{profile?.display_name}</Text>
+              <Text className="text-proof-muted">@{profile?.username}</Text>
+            </View>
           </View>
           <View className="flex-row gap-2">
             <TouchableOpacity

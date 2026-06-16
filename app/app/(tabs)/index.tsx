@@ -6,6 +6,7 @@ import type { Match, Profile } from '../../types'
 
 export default function HomeScreen() {
   const router = useRouter()
+  const [myId, setMyId] = useState<string | null>(null)
   const [pendingMatches, setPendingMatches] = useState<Match[]>([])
   const [recentMatches, setRecentMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
@@ -14,6 +15,7 @@ export default function HomeScreen() {
   async function load() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
+    setMyId(user.id)
 
     const { data: pending } = await supabase
       .from('matches')
@@ -76,18 +78,35 @@ export default function HomeScreen() {
               <Text className="text-proof-muted text-sm text-center mt-1">Log your first match to start building your rating.</Text>
             </View>
           )
-          : recentMatches.map(match => (
-            <TouchableOpacity
-              key={match.id}
-              className="bg-proof-card border border-proof-border rounded-xl p-4 mb-3"
-              onPress={() => router.push(`/match/${match.id}`)}
-            >
-              <Text className="text-proof-white font-semibold">
-                {(match.p1 as any)?.display_name} vs {(match.p2 as any)?.display_name}
-              </Text>
-              <Text className="text-proof-muted text-sm mt-0.5 capitalize">{match.surface ?? 'Unknown surface'}</Text>
-            </TouchableOpacity>
-          ))
+          : recentMatches.map(match => {
+            const won = match.winner_id === myId
+            const isP1 = match.p1_id === myId
+            const opponent = isP1 ? (match.p2 as any) : (match.p1 as any)
+            const sets = (match as any).sets?.sort((a: any, b: any) => a.set_number - b.set_number) ?? []
+            const scoreStr = sets.map((s: any) =>
+              isP1 ? `${s.p1_games}-${s.p2_games}` : `${s.p2_games}-${s.p1_games}`
+            ).join('  ')
+
+            return (
+              <TouchableOpacity
+                key={match.id}
+                className="bg-proof-card border border-proof-border rounded-xl p-4 mb-3 flex-row items-center"
+                onPress={() => router.push(`/match/${match.id}`)}
+              >
+                <View className={`w-8 h-8 rounded-lg items-center justify-center mr-3 ${won ? 'bg-proof-green/20' : 'bg-red-500/20'}`}>
+                  <Text className={`text-xs font-bold ${won ? 'text-proof-green' : 'text-red-400'}`}>
+                    {won ? 'W' : 'L'}
+                  </Text>
+                </View>
+                <View className="flex-1">
+                  <Text className="text-proof-white font-semibold">vs {opponent?.display_name}</Text>
+                  <Text className="text-proof-muted text-sm mt-0.5">
+                    {scoreStr || match.surface || 'Unknown surface'}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            )
+          })
         }
       </View>
     </ScrollView>
