@@ -100,16 +100,19 @@ proof/
 ├── app/                     # Expo app
 │   ├── app/                 # Expo Router screens
 │   │   ├── (auth)/          # Login, Register
-│   │   ├── (tabs)/          # Home, Log, Rankings, Profile
+│   │   ├── (tabs)/          # Home, Log, Rankings, People, Profile
 │   │   ├── match/           # Match detail + confirm modal
-│   │   └── player/          # Player profile
+│   │   ├── player/          # Player profile ([username].tsx)
+│   │   └── edit-profile.tsx # Edit profile modal
+│   ├── components/          # RatingChart
 │   ├── lib/                 # supabase.ts, notifications.ts
-│   ├── hooks/               # useSession
-│   └── types/               # Shared TypeScript types
+│   ├── hooks/               # useSession, useProfile, useRatingHistory
+│   └── types/               # Shared TypeScript types + toPlayerRating()
 ├── packages/
-│   └── algorithms/          # Tennis rating engine (pure TS, tested)
+│   └── algorithms/          # Tennis rating engine (pure TS, 25 tests)
 ├── supabase/
-│   ├── migrations/          # 001_initial_schema.sql
+│   ├── config.toml          # Local dev config
+│   ├── migrations/          # 001_initial_schema.sql, 002_friendship_rls_fix.sql
 │   └── functions/           # update-ratings, notify-match-request
 └── docs/
     └── algorithms/          # tennis.md — algorithm spec
