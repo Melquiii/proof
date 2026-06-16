@@ -7,6 +7,7 @@ export default function RegisterScreen() {
   const [form, setForm] = useState({ email: '', password: '', username: '', displayName: '', city: '', country: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [needsConfirm, setNeedsConfirm] = useState(false)
 
   function update(key: keyof typeof form) {
     return (value: string) => setForm(f => ({ ...f, [key]: value }))
@@ -36,14 +37,15 @@ export default function RegisterScreen() {
     }
 
     // Update profile with location if provided
-    if (city || country) {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (user) {
-        await supabase.from('profiles').update({ city, country }).eq('id', user.id)
-      }
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user && (city || country)) {
+      await supabase.from('profiles').update({ city, country }).eq('id', user.id)
     }
 
     setLoading(false)
+
+    // If session is null, email confirmation is required
+    if (!user) setNeedsConfirm(true)
   }
 
   const field = (label: string, key: keyof typeof form, props = {}) => (
@@ -64,7 +66,17 @@ export default function RegisterScreen() {
       className="flex-1 bg-proof-black"
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <ScrollView className="flex-1 px-6" contentContainerStyle={{ paddingTop: 60, paddingBottom: 40 }}>
+      {needsConfirm ? (
+        <View className="flex-1 items-center justify-center px-8">
+          <Text className="text-proof-white text-2xl font-bold mb-3">Check your email</Text>
+          <Text className="text-proof-muted text-center">
+            We sent a confirmation link to {form.email}. Click it to activate your account.
+          </Text>
+        </View>
+      ) : null}
+      <ScrollView className="flex-1 px-6" contentContainerStyle={{ paddingTop: 60, paddingBottom: 40 }}
+        style={needsConfirm ? { display: 'none' } : undefined}
+      >
         <Text className="text-proof-white text-3xl font-bold mb-1">Create Account</Text>
         <Text className="text-proof-muted text-sm mb-8">Your rating starts with your first match.</Text>
 
