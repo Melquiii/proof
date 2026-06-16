@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native'
-import { useRouter } from 'expo-router'
+import { useRouter, useFocusEffect } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import type { RankingEntry } from '../../types'
 import { Avatar } from '../../components/Avatar'
@@ -46,7 +46,7 @@ export default function RankingsScreen() {
     setRefreshing(false)
   }
 
-  useEffect(() => { load() }, [scope])
+  useFocusEffect(useCallback(() => { load() }, [scope]))
 
   const title = scope === 'city'
     ? (userLocation.city ?? 'Your City')

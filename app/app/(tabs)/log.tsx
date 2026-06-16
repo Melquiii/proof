@@ -109,10 +109,16 @@ export default function LogMatchScreen() {
     // Notify opponent via push notification
     await supabase.functions.invoke('notify-match-request', { body: { matchId: match.id } })
 
+    const opponentName = opponent.display_name
+    setOpponent(null)
+    setOpponentSearch('')
+    setSearchResults([])
+    setSurface('hard')
+    setSets([{ p1: '', p2: '' }])
     setSubmitting(false)
     Alert.alert(
       'Match Logged',
-      `Waiting for ${opponent.display_name} to confirm.`,
+      `Waiting for ${opponentName} to confirm.`,
       [{ text: 'OK', onPress: () => router.push('/(tabs)') }]
     )
   }
