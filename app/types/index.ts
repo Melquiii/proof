@@ -48,6 +48,16 @@ export interface Match {
   p2?: Profile
 }
 
+export function toPlayerRating(r: SportRating) {
+  return {
+    rating: r.rating,
+    ratingDeviation: r.rating_deviation,
+    volatility: r.volatility,
+    matchCount: r.match_count,
+    lastMatchAt: r.last_match_at ? new Date(r.last_match_at) : null,
+  }
+}
+
 export interface RankingEntry {
   user_id: string
   display_name: string

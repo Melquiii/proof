@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { getRatingBand, isProvisional, computeReliabilityScore, winProbability } from '@proof/algorithms'
 import type { Profile, SportRating, Match } from '../../types'
+import { toPlayerRating } from '../../types'
 
 export default function PlayerProfileScreen() {
   const { username } = useLocalSearchParams<{ username: string }>()
@@ -87,15 +88,12 @@ export default function PlayerProfileScreen() {
 
   const isOwnProfile = currentUserId === profile.id
   const band = rating ? getRatingBand(rating.rating) : null
-  const provisional = rating ? isProvisional({ ...rating, lastMatchAt: rating.last_match_at ? new Date(rating.last_match_at) : null }) : false
-  const reliability = rating ? computeReliabilityScore({ ...rating, lastMatchAt: rating.last_match_at ? new Date(rating.last_match_at) : null }) : 0
+  const pr = rating ? toPlayerRating(rating) : null
+  const provisional = pr ? isProvisional(pr) : false
+  const reliability = pr ? computeReliabilityScore(pr) : 0
 
-  // Win probability against this player (if I have a rating too)
-  const winProb = myRating && rating && !isOwnProfile
-    ? winProbability(
-        { ...myRating, lastMatchAt: myRating.last_match_at ? new Date(myRating.last_match_at) : null },
-        { ...rating, lastMatchAt: rating.last_match_at ? new Date(rating.last_match_at) : null }
-      )
+  const winProb = myRating && pr && !isOwnProfile
+    ? winProbability(toPlayerRating(myRating), pr)
     : null
 
   return (

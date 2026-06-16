@@ -6,6 +6,7 @@ import { getRatingBand, isProvisional, computeReliabilityScore } from '@proof/al
 import { useRatingHistory } from '../../hooks/useRatingHistory'
 import { RatingChart } from '../../components/RatingChart'
 import type { Profile, SportRating, Match } from '../../types'
+import { toPlayerRating } from '../../types'
 
 export default function ProfileScreen() {
   const router = useRouter()
@@ -49,8 +50,9 @@ export default function ProfileScreen() {
   )
 
   const band = rating ? getRatingBand(rating.rating) : null
-  const provisional = rating ? isProvisional({ ...rating, lastMatchAt: rating.last_match_at ? new Date(rating.last_match_at) : null }) : false
-  const reliability = rating ? computeReliabilityScore({ ...rating, lastMatchAt: rating.last_match_at ? new Date(rating.last_match_at) : null }) : 0
+  const pr = rating ? toPlayerRating(rating) : null
+  const provisional = pr ? isProvisional(pr) : false
+  const reliability = pr ? computeReliabilityScore(pr) : 0
 
   return (
     <ScrollView className="flex-1 bg-proof-black" contentContainerStyle={{ paddingBottom: 40 }}>
