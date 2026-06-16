@@ -3,6 +3,7 @@ import { View, Text, TextInput, ScrollView, TouchableOpacity, ActivityIndicator 
 import { useRouter } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import { getRatingBand } from '@proof/algorithms'
+import { Avatar } from '../../components/Avatar'
 
 interface PlayerResult {
   id: string
@@ -128,9 +129,10 @@ export default function PeopleScreen() {
           return (
             <TouchableOpacity
               key={player.id}
-              className="flex-row items-center justify-between px-4 py-4 border-b border-proof-border"
+              className="flex-row items-center gap-3 px-4 py-4 border-b border-proof-border"
               onPress={() => router.push(`/player/${player.username}`)}
             >
+              <Avatar name={player.display_name} size={40} />
               <View className="flex-1">
                 <Text className="text-proof-white font-semibold">{player.display_name}</Text>
                 <Text className="text-proof-muted text-sm">@{player.username}</Text>

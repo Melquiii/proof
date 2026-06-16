@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native'
 import { useRouter } from 'expo-router'
 import { supabase } from '../../lib/supabase'
@@ -15,6 +15,7 @@ interface SetInput { p1: string; p2: string }
 
 export default function LogMatchScreen() {
   const router = useRouter()
+  const [myId, setMyId] = useState<string | null>(null)
   const [opponentSearch, setOpponentSearch] = useState('')
   const [opponent, setOpponent] = useState<{ id: string; display_name: string; username: string } | null>(null)
   const [searchResults, setSearchResults] = useState<any[]>([])
@@ -22,14 +23,20 @@ export default function LogMatchScreen() {
   const [sets, setSets] = useState<SetInput[]>([{ p1: '', p2: '' }])
   const [submitting, setSubmitting] = useState(false)
 
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => setMyId(user?.id ?? null))
+  }, [])
+
   async function searchOpponents(query: string) {
     setOpponentSearch(query)
     if (query.length < 2) { setSearchResults([]); return }
-    const { data } = await supabase
+    let q = supabase
       .from('profiles')
       .select('id, display_name, username')
       .ilike('username', `%${query}%`)
-      .limit(5)
+      .limit(6)
+    if (myId) q = q.neq('id', myId)
+    const { data } = await q
     setSearchResults(data || [])
   }
 

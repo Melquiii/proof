@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, RefreshCon
 import { useRouter } from 'expo-router'
 import { supabase } from '../../lib/supabase'
 import type { RankingEntry } from '../../types'
+import { Avatar } from '../../components/Avatar'
 
 type Scope = 'city' | 'country'
 
@@ -26,7 +27,7 @@ export default function RankingsScreen() {
 
     if (profile) setUserLocation({ city: profile.city, country: profile.country })
 
-    const query = supabase
+    let query = supabase
       .from('rankings_by_city')
       .select('*')
       .eq('sport', 'tennis')
@@ -34,9 +35,9 @@ export default function RankingsScreen() {
       .limit(50)
 
     if (scope === 'city' && profile?.city) {
-      query.eq('city', profile.city)
+      query = query.eq('city', profile.city)
     } else if (scope === 'country' && profile?.country) {
-      query.eq('country', profile.country)
+      query = query.eq('country', profile.country)
     }
 
     const { data } = await query
@@ -88,9 +89,11 @@ export default function RankingsScreen() {
                   onPress={() => router.push(`/player/${entry.username}`)}
                 >
                   {/* Rank number */}
-                  <Text className={`w-8 text-center font-bold text-sm ${i < 3 ? 'text-proof-gold' : 'text-proof-muted'}`}>
+                  <Text className={`w-7 text-center font-bold text-sm ${i < 3 ? 'text-proof-gold' : 'text-proof-muted'}`}>
                     {i + 1}
                   </Text>
+
+                  <Avatar name={entry.display_name} size={36} />
 
                   {/* Player info */}
                   <View className="flex-1 ml-3">
